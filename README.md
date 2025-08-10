@@ -1,6 +1,7 @@
 ROM Design using SystemVerilog
 ------------------------------
 Overview
+--------------
 This project implements a synchronous Read-Only Memory (ROM) in SystemVerilog.
 
 Width: 8 bits
