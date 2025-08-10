@@ -1,69 +1,67 @@
-**Design of 1 Kibibit ROM using SystemVerilog**
--
-Project Overview
---
-This project implements a synchronous Read-Only Memory (ROM) module using SystemVerilog, along with a testbench environment for verification. The ROM features:
-Memory Size: 128 locations of 8 bits each, addressed by a 7-bit address line.
-Read Operation: Controlled by the rd_en signal. When high on the clock's rising edge, data from the specified address is output on the rd_data bus.
-Write Operation: Controlled by the wr_en signal. When high on the clock's rising edge, data from the wr_data bus is written to the specified memory address.
-Clock Signal: Synchronizes all read and write operations ensuring data stability and timing control.
-
-The verification environment includes:
-
-A SystemVerilog interface (rom_inf) to bundle the input/output signals and the clock.
-A randomized testbench class (tb) that generates stimulus with controlled address constraints.
-A generator class (gen) that produces randomized test vectors and sends them via a mailbox.
-A bus functional model (BFM) class (bfm) that drives the interface signals using test vectors from the mailbox.
-A top-level test module to instantiate the ROM, interface, generator, and BFM, running automated test cycles to validate memory functionality.  
-
-This modular approach ensures reliable testing and validation of the ROM design, with clear separation of DUT and verification components.
-
-
-
-Calculation:
--
-1. To Design any memory element first list down the size and width of the memory.  
-  In this project the size is 1 Kibi bits which equavalent to 1024 bits and width of memory per location is 8 bit.  
-2. Next calculate the depth of memory .  
-depth of memory = (No of bits)/(total width)  
-i.e depth = 1024/8 = 128 locations required.  
-3. Calculate address width.
-For 128 different location we would need 7 bit address line.  
-
-Signal Specification
--
-In this project a total 6 signals are used and  the specification is as below
-|Signal name|Direction|width|Description|
-|-----------|---------|-----|-----------|
-| rd_en | input | 1 bit | Control signal controls the read operation. Whenever this signal is high, the data stored at the memory location specified by the address is copied to the rd_data bus.|
-| wr_en | input | 1 bit | Control signal controls the write operation. Whenever this signal is high, the data present on the wr_data bus is written to the memory location specified by the address addr.|
-| wr_data| input| 8 bit| The input bus carries the data that is to be written into the memory.|
-|clock| input | 1 bit | Synchronizes the timing of all memory operations, ensuring data is read from or written to the memory at the correct clock edges.|
-| addr | input | 7 bit | Specifies the memory location from which data is to be read or to which data is to be written.|
-|rd_data| output | 8 bit | Carries the data read from the memory location specified by the address during a read operation.|
-
-Got it! Here's a detailed **program flow** overview followed by an in-depth explanation of every block in your SystemVerilog ROM testbench design, including the role of the `common` class with its virtual interface and mailbox.
+# Design of 1 Kibibit ROM using SystemVerilog
 
 ---
 
-# Program Flow Overview 
+## Project Overview
 
-1. **Clock generation**: A clock signal is created to synchronize all operations.
+This project implements a synchronous **Read-Only Memory (ROM)** module using SystemVerilog, along with a testbench environment for verification. The ROM features:
 
-2. **Test vector generation**: The `gen` class creates randomized input stimulus (`wr_data`, `rd_en`, `wr_en`, `addr`) packaged as an object `tb`. These test vectors conform to constraints (e.g., address fixed to 100).
+* **Memory Size:** 128 locations of 8 bits each, addressed by a 7-bit address line.
+* **Read Operation:** Controlled by the `rd_en` signal. When high on the clock's rising edge, data from the specified address is output on the `rd_data` bus.
+* **Write Operation:** Controlled by the `wr_en` signal. When high on the clock's rising edge, data from the `wr_data` bus is written to the specified memory address.
+* **Clock Signal:** Synchronizes all read and write operations ensuring data stability and timing control.
 
-3. **Inter-thread communication**: The generated test vectors are placed into a **mailbox** (a thread-safe FIFO queue) managed by the `common` class.
+The verification environment includes:
 
-4. **Driving DUT signals**: The `bfm` (bus functional model) class retrieves test vectors from the mailbox and drives the DUT's interface signals (`wr_data`, `rd_en`, `wr_en`, `addr`) accordingly.
+* A SystemVerilog interface (`rom_inf`) to bundle the input/output signals and the clock.
+* A randomized testbench class (`tb`) that generates stimulus with controlled address constraints.
+* A generator class (`gen`) that produces randomized test vectors and sends them via a mailbox.
+* A bus functional model (BFM) class (`bfm`) that drives the interface signals using test vectors from the mailbox.
+* A top-level test module to instantiate the ROM, interface, generator, and BFM, running automated test cycles to validate memory functionality.
 
-5. **ROM operations**: On every rising edge of the clock:
+This modular approach ensures reliable testing and validation of the ROM design, with clear separation of DUT and verification components.
 
-   * If `wr_en` is asserted, the ROM writes the `wr_data` value to the memory at location `addr`.
-   * If `rd_en` is asserted, the ROM outputs the memory content at `addr` onto `rd_data`.
+---
 
-6. **Verification cycles**: Steps 2-5 repeat for multiple cycles (10 in your case) to test different random inputs.
+## Calculation
 
-7. **Simulation end**: After the defined number of test cycles, simulation finishes.
+1. **Memory size:** The target size is 1 Kibibit, which equals 1024 bits.
+2. **Memory depth:** The depth is 1024/width of memory(8 bit) = 128 locations.  
+3. **Address width:** To address 128 locations, we need a 7-bit address bus (since $2^7 = 128$).
+
+---
+
+## Signal Specification
+
+| Signal Name | Direction | Width | Description                                                                                                                     |
+| ----------- | --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `rd_en`     | Input     | 1 bit | Control signal for read operation. When high, data stored at the memory location specified by `addr` is output on `rd_data`.    |
+| `wr_en`     | Input     | 1 bit | Control signal for write operation. When high, data present on `wr_data` is written to the memory location specified by `addr`. |
+| `wr_data`   | Input     | 8 bit | Input bus carrying the data to be written into the memory.                                                                      |
+| `clock`     | Input     | 1 bit | Synchronizes timing of all memory operations, ensuring correct timing on read and write.                                        |
+| `addr`      | Input     | 7 bit | Specifies the memory location for read or write operation.                                                                      |
+| `rd_data`   | Output    | 8 bit | Carries data read from the specified memory location during a read operation.                                                   |
+
+---
+
+# Program Flow Overview
+
+1. **Clock generation:** A clock signal is created to synchronize all operations.
+
+2. **Test vector generation:** The `gen` class creates randomized input stimulus (`wr_data`, `rd_en`, `wr_en`, `addr`) packaged as an object `tb`. These test vectors conform to constraints (e.g., address fixed to 100).
+
+3. **Inter-thread communication:** Generated test vectors are placed into a **mailbox** (thread-safe FIFO queue) managed by the `common` class.
+
+4. **Driving DUT signals:** The bus functional model (`bfm`) class retrieves test vectors from the mailbox and drives the DUT's interface signals (`wr_data`, `rd_en`, `wr_en`, `addr`).
+
+5. **ROM operations:** On every rising clock edge:
+
+   * If `wr_en` is asserted, ROM writes `wr_data` to memory at `addr`.
+   * If `rd_en` is asserted, ROM outputs memory content at `addr` on `rd_data`.
+
+6. **Verification cycles:** Steps 2–5 repeat for multiple cycles (10 in this project) to test varied random inputs.
+
+7. **Simulation end:** After all test cycles, simulation finishes.
 
 ---
 
@@ -80,11 +78,9 @@ class common;
 endclass
 ```
 
-* **Purpose:** Acts as a shared repository for communication and signal connection.
-
-* **Mailbox (`mb`):** A thread-safe queue used to transfer test vector objects (`tb`) safely between the generator (`gen`) and the bus functional model (`bfm`). This decouples stimulus generation from signal driving, allowing asynchronous behavior and cleaner testbench architecture.
-
-* **Virtual Interface (`vif`):** Holds a reference to the `rom_inf` interface instance. Using a virtual interface allows classes (like `bfm`) to drive or monitor DUT signals abstractly, improving modularity and reuse. Instead of passing signals explicitly, classes use `common::vif` to access the interface signals.
+* **Purpose:** Acts as shared storage for communication and signal access between testbench components.
+* **Mailbox (`mb`):** Thread-safe FIFO queue transferring test vectors (`tb` objects) between generator and BFM, decoupling stimulus creation and signal driving.
+* **Virtual Interface (`vif`):** Reference to the `rom_inf` interface instance, enabling modular, abstract access to DUT signals inside testbench classes.
 
 ---
 
@@ -99,43 +95,35 @@ interface rom_inf(input bit clock);
 endinterface
 ```
 
-* **Purpose:** Bundles all ROM input/output signals with the clock into a single interface construct.
-
-* **Why use interfaces?** Interfaces simplify connecting the DUT to the testbench. Instead of connecting each signal individually, you pass the entire interface instance. This reduces wiring complexity and improves readability.
-
-* The interface contains **write data bus**, **read data bus**, **read enable**, **write enable**, and **address bus** signals, all required for ROM operation.
+* **Purpose:** Bundles all input/output signals and clock for the ROM module.
+* **Benefit:** Simplifies connections between DUT and testbench, reducing wiring complexity.
 
 ---
 
 ### 3. ROM Module (`rom`)
 
 ```systemverilog
-module rom(...);
-  ...
-  reg [7:0] mem[127:0];  // Memory array
-  
+module rom(
+  output reg [7:0] rd_data,
+  input [7:0] wr_data,
+  input [6:0] addr,
+  input rd_en,
+  input wr_en,
+  input clock
+);
+  reg [7:0] mem[127:0];
+
   always @(posedge clock) begin
-    if (wr_en) begin
-      mem[addr] = wr_data;  // Write operation
-    end
-    if (rd_en) begin
-      rd_data = mem[addr];  // Read operation
-    end
+    if (wr_en)
+      mem[addr] = wr_data;
+    if (rd_en)
+      rd_data = mem[addr];
   end
 endmodule
 ```
 
-* **Purpose:** Implements the core Read-Only Memory functionality.
-
-* **Synchronous memory:** Reads and writes happen on the rising clock edge for stable and predictable timing.
-
-* **Write Enable (`wr_en`):** When high, copies data from `wr_data` bus into the memory at the specified address.
-
-* **Read Enable (`rd_en`):** When high, outputs the data stored at the specified address onto the `rd_data` bus.
-
-* **Memory Size:** 128 entries (addressed by 7 bits), each 8 bits wide.
-
-* This module represents the **Device Under Test (DUT)** in the verification environment.
+* **Functionality:** Implements synchronous ROM with write and read operations occurring on the clock's rising edge.
+* **Memory:** 128 words, 8 bits each, accessed via 7-bit address.
 
 ---
 
@@ -143,24 +131,19 @@ endmodule
 
 ```systemverilog
 class tb;
-  randc bit [7:0] wr_data; 
-  randc bit rd_en; 
+  randc bit [7:0] wr_data;
+  randc bit rd_en;
   randc bit wr_en;
   randc bit [6:0] addr;
 
   constraint c1 {
-    addr == 100;  // Restrict address for focused testing
+    addr == 100;
   }
 endclass
 ```
 
-* **Purpose:** Defines the test vector structure and its randomization constraints.
-
-* **Randomized fields:** Inputs (`wr_data`, `rd_en`, `wr_en`, and `addr`) are marked `randc` for constrained random cyclic generation, ensuring unique random values each time.
-
-* **Constraint:** Restricts the address to 100 for targeted tests, useful for focused debugging or specific test coverage.
-
-* This class encapsulates **stimulus data**.
+* **Purpose:** Defines stimulus structure with constrained random fields.
+* **Constraint:** Fixes address to 100 for focused testing.
 
 ---
 
@@ -172,21 +155,14 @@ class gen;
 
   task t1;
     p = new();
-    p.randomize();          // Generate a random test vector
-    common::mb.put(p);      // Send it to mailbox for consumption
+    p.randomize();
+    common::mb.put(p);
   endtask
 endclass
 ```
 
-* **Purpose:** Generates new randomized test vectors each cycle.
-
-* **Operation:**
-
-  * Creates a new `tb` object.
-  * Randomizes its fields.
-  * Places the randomized object into the mailbox for the BFM to consume.
-
-* This **decouples stimulus creation** from driving signals, supporting better testbench modularity.
+* **Purpose:** Creates randomized test vectors and puts them in the mailbox.
+* **Decouples** generation from driving signals.
 
 ---
 
@@ -198,8 +174,8 @@ class bfm;
 
   task t2;
     p = new();
-    common::mb.get(p);           // Retrieve a test vector from mailbox
-    common::vif.wr_data = p.wr_data;  // Drive DUT signals through interface
+    common::mb.get(p);
+    common::vif.wr_data = p.wr_data;
     common::vif.wr_en = p.wr_en;
     common::vif.rd_en = p.rd_en;
     common::vif.addr = p.addr;
@@ -207,14 +183,7 @@ class bfm;
 endclass
 ```
 
-* **Purpose:** Drives the DUT interface signals using test vectors received from the mailbox.
-
-* **Operation:**
-
-  * Gets a test vector `tb` from the mailbox.
-  * Assigns the fields to the corresponding interface signals (`wr_data`, `wr_en`, `rd_en`, `addr`).
-
-* Acts as the **signal driver** in the testbench.
+* **Purpose:** Receives test vectors from mailbox and drives DUT signals via interface.
 
 ---
 
@@ -226,7 +195,7 @@ module test;
 
   initial begin
     clock = 0;
-    forever #5 clock = ~clock;  // 10 time unit clock period
+    forever #5 clock = ~clock;
   end
 
   gen a = new();
@@ -242,54 +211,19 @@ module test;
   );
 
   initial begin
-    common::vif = pvif;        // Connect interface instance to common class
-    repeat (10) begin          // Run 10 test cycles
-      a.t1;                   // Generate test vector
-      b.t2;                   // Drive test vector to DUT
-      @(posedge clock);       // Wait for next clock edge
+    common::vif = pvif;
+    repeat (10) begin
+      a.t1;
+      b.t2;
+      @(posedge clock);
     end
-    $finish;                  // End simulation
+    $finish;
   end
 endmodule
 ```
 
-* **Purpose:** Ties together DUT, interface, stimulus generator, and BFM.
-
-* **Clock Generation:** Produces a stable clock to drive synchronous operations.
-
-* **Instantiation:**
-
-  * Creates interface instance `pvif` connected to clock.
-  * Instantiates the DUT (`rom`).
-  * Instantiates generator (`gen`) and BFM (`bfm`).
-
-* **Test Sequence:**
-
-  * Assigns interface to `common::vif`.
-  * Runs a loop for 10 cycles generating and applying random test vectors.
-  * Waits for a clock edge each cycle to synchronize stimulus application.
-  * Ends simulation after tests.
+* **Role:** Instantiates clock, DUT, interface, generator, and BFM.
+* **Runs** 10 test cycles applying randomized stimulus synchronized to clock edges.
+* **Ends** simulation after tests.
 
 ---
-
-# Summary
-
-* The **`common` class** provides the glue with its mailbox (for safe communication between generator and BFM) and virtual interface (for modular access to DUT signals).
-* The **interface** groups signals for clean connection.
-* The **ROM module** is the DUT that synchronously reads/writes data.
-* The **`tb` class** defines random test vectors.
-* The **`gen` class** creates stimulus vectors.
-* The **`bfm` class** applies stimulus to the DUT signals.
-* The **`test` module** coordinates clock, DUT, interface, and verification flow.
-
----
-
-If you want, I can also help with:
-
-* Adding assertions for checking correctness.
-* Generating waveform viewing scripts.
-* Expanding the testbench with coverage.
-* Explaining how to run the simulation.
-
-Just say the word!
-
