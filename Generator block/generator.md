@@ -29,15 +29,15 @@ endclass
 
 How It Works
 --------------
-Transaction Creation
+**Transaction Creation**
 A new object p of type tb (transaction class) is created.
 This tb class contains all the DUT input signals as randc variables, along with constraints.
 
-Randomization
+**Randomization**
 p.randomize() generates random values for all transaction fields.
 Constraints from the tb class ensure only valid combinations are generated (e.g., reset disables read/write).
 
-Sending to BFM
+**Sending to BFM**
 Once generated, the transaction is sent to the common::mb mailbox.
 The BFM retrieves the transaction from the mailbox and drives the DUT via the virtual interface.
 
