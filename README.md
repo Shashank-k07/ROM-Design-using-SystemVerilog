@@ -9,12 +9,6 @@ Depth: 128 locations
 Operation: Clocked with read and write enable controls
 Applications: FPGA/ASIC designs, memory initialization, digital system simulation, and educational use in hardware design courses.
 
-Block diagram 
--------------------------------------------------
-The figure below shows the basic block diagram of a ROM.
-![rom](https://github.com/user-attachments/assets/655d804b-984a-496c-a2fb-7f6511c8b2a2)
-This diagram illustrates how address lines select a memory location, and how stored data is output on the data bus.
-
 Signal Description
 --------------------
 | Signal   |   Width    |   Direction   | Description                                                 |
